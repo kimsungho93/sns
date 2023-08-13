@@ -116,5 +116,56 @@ public class PostServiceTest {
         Assertions.assertEquals(ErrorCode.INVALID_PERMISSION, e.getErrorCode());
     }
 
+    @Test
+    @DisplayName("포스트 삭제가 성공한 경우")
+    void delete_success() {
+        String email = "test@gmail.com";
+        Integer postId = 1;
+
+        PostEntity postEntity = PostEntityFixture.get(email, postId, 1);
+        UserEntity userEntity = postEntity.getUser();
+
+        when(userEntityRepository.findByEmail(email)).thenReturn(Optional.of(userEntity));
+        when(postEntityRepository.findById(postId)).thenReturn(Optional.of(postEntity));
+
+        Assertions.assertDoesNotThrow(() -> postService.delete(email, 1));
+    }
+
+    @Test
+    @DisplayName("포스트 삭제시 포스트가 존재 하지 않는 경우")
+    void delete_fail_none_exist_post() {
+        String email = "test@gmail.com";
+        Integer postId = 1;
+
+        PostEntity postEntity = PostEntityFixture.get(email, postId, 1);
+        UserEntity userEntity = postEntity.getUser();
+
+        when(userEntityRepository.findByEmail(email)).thenReturn(Optional.of(userEntity));
+        when(postEntityRepository.findById(postId)).thenReturn(Optional.empty());
+
+        SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class,
+                () -> postService.delete(email, 1));
+        Assertions.assertEquals(ErrorCode.POST_NOT_FOUND, e.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("포스트 삭제시 권한이 없는 경우")
+    void delete_fail_none_authority_post() {
+        String title = "제목1";
+        String content = "내용1";
+        String email = "test@gmail.com";
+        Integer postId = 1;
+
+        PostEntity postEntity = PostEntityFixture.get(email, postId, 1);
+        UserEntity writer = UserEntityFixture.get("test@naver.com", "1234", 2);
+
+        when(userEntityRepository.findByEmail(email)).thenReturn(Optional.of(writer));
+        when(postEntityRepository.findById(postId)).thenReturn(Optional.of(postEntity));
+
+        SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class,
+                () -> postService.delete(email, 1));
+        Assertions.assertEquals(ErrorCode.INVALID_PERMISSION, e.getErrorCode());
+    }
+
 
 }
