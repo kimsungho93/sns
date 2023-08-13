@@ -153,8 +153,7 @@ public class PostServiceTest {
     @Test
     @DisplayName("포스트 삭제시 권한이 없는 경우")
     void delete_fail_none_authority_post() {
-        String title = "제목1";
-        String content = "내용1";
+
         String email = "test@gmail.com";
         Integer postId = 1;
 
@@ -173,7 +172,9 @@ public class PostServiceTest {
     @DisplayName("전체 피드 목록이 성공한 경우")
     void findAllFeed_success() {
         Pageable pageable = mock(Pageable.class);
+
         when(postEntityRepository.findAll(pageable)).thenReturn(Page.empty());
+
         Assertions.assertDoesNotThrow(() -> postService.list(pageable));
     }
 
@@ -181,7 +182,11 @@ public class PostServiceTest {
     @DisplayName("내 피드 목록이 성공한 경우")
     void myFeed_success() {
         Pageable pageable = mock(Pageable.class);
-        when(postEntityRepository.findAllByUser(any(), pageable)).thenReturn(Page.empty());
+        UserEntity user = mock(UserEntity.class);
+
+        when(userEntityRepository.findByEmail(any())).thenReturn(Optional.of(user));
+        when(postEntityRepository.findAllByUser(user, pageable)).thenReturn(Page.empty());
+
         Assertions.assertDoesNotThrow(() -> postService.my("", pageable));
     }
 
