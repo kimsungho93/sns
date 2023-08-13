@@ -15,10 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -44,7 +46,7 @@ public class PostControllerTest {
     @Test
     @DisplayName("포스트 작성 성공")
     @WithMockUser
-    void postWrite_success() throws Exception{
+    void postWrite_success() throws Exception {
         String title = "제목1";
         String content = "내용1";
 
@@ -58,7 +60,7 @@ public class PostControllerTest {
     @Test
     @DisplayName("포스트 작성시 로그인 하지 않은 경우")
     @WithAnonymousUser
-    void postWrite_fail() throws Exception{
+    void postWrite_fail() throws Exception {
         String title = "제목1";
         String content = "내용1";
 
@@ -72,7 +74,7 @@ public class PostControllerTest {
     @Test
     @DisplayName("포스트 수정 성공")
     @WithMockUser
-    void postModify_success() throws Exception{
+    void postModify_success() throws Exception {
         String title = "제목1";
         String content = "내용1";
 
@@ -89,7 +91,7 @@ public class PostControllerTest {
     @Test
     @DisplayName("포스트 수정시 로그인 하지 않은 경우")
     @WithAnonymousUser
-    void postModify_fail() throws Exception{
+    void postModify_fail() throws Exception {
         String title = "제목1";
         String content = "내용1";
 
@@ -103,7 +105,7 @@ public class PostControllerTest {
     @Test
     @DisplayName("포스트 수정시 본인이 작성한 포스트가 아닌 경우 예외 발생")
     @WithMockUser
-    void postModify_fail_not_write() throws Exception{
+    void postModify_fail_not_write() throws Exception {
         String title = "제목1";
         String content = "내용1";
 
@@ -120,7 +122,7 @@ public class PostControllerTest {
     @Test
     @DisplayName("포스트 수정시 수정 하려는 포스트가 없는 경우 예외 발생")
     @WithMockUser
-    void postModify_fail_not_found_post() throws Exception{
+    void postModify_fail_not_found_post() throws Exception {
         String title = "제목1";
         String content = "내용1";
 
@@ -136,7 +138,7 @@ public class PostControllerTest {
     @Test
     @DisplayName("포스트 삭제 성공")
     @WithMockUser
-    void postDelete_success() throws Exception{
+    void postDelete_success() throws Exception {
 
         mockMvc.perform(delete("/api/v1/posts/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -147,7 +149,7 @@ public class PostControllerTest {
     @Test
     @DisplayName("포스트 삭제시 로그인하지 않은 경우")
     @WithAnonymousUser
-    void postDelete_fail_not_login() throws Exception{
+    void postDelete_fail_not_login() throws Exception {
 
         mockMvc.perform(delete("/api/v1/posts/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -158,7 +160,7 @@ public class PostControllerTest {
     @Test
     @DisplayName("포스트 삭제시 작성자와 삭제 요청자가 다른 경우")
     @WithMockUser
-    void postDelete_fail_not_match_user() throws Exception{
+    void postDelete_fail_not_match_user() throws Exception {
         // mocking
         doThrow(new SnsApplicationException(ErrorCode.INVALID_PERMISSION)).when(postService).delete(any(), any());
 
@@ -171,7 +173,7 @@ public class PostControllerTest {
     @Test
     @DisplayName("포스트 삭제시 삭제하려는 포스트가 존재하지 않는 경우")
     @WithMockUser
-    void postDelete_fail_none_exist_post() throws Exception{
+    void postDelete_fail_none_exist_post() throws Exception {
         // mocking
         doThrow(new SnsApplicationException(ErrorCode.POST_NOT_FOUND)).when(postService).delete(any(), any());
 
@@ -181,6 +183,54 @@ public class PostControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+
+    @Test
+    @DisplayName("피드 목록 성공")
+    @WithMockUser
+    void feedList_success() throws Exception {
+        when(postService.list(any())).thenReturn(Page.empty());
+
+        mockMvc.perform(get("/api/v1/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                ).andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("피드목록요청시 로그인하지 않은 경우")
+    @WithAnonymousUser
+    void feedList_fail_not_login() throws Exception {
+        when(postService.list(any())).thenReturn(Page.empty());
+
+        mockMvc.perform(get("/api/v1/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                ).andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("내 피드 목록 성공")
+    @WithMockUser
+    void my_feedList_success() throws Exception {
+        when(postService.my(any(), any())).thenReturn(Page.empty());
+
+        mockMvc.perform(get("/api/v1/posts/my")
+                        .contentType(MediaType.APPLICATION_JSON)
+                ).andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("내 피드목록요청시 로그인하지 않은 경우")
+    @WithAnonymousUser
+    void my_feedList_fail_not_login() throws Exception {
+        when(postService.my(any(), any())).thenReturn(Page.empty());
+
+        mockMvc.perform(get("/api/v1/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                ).andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
 
 
 }
