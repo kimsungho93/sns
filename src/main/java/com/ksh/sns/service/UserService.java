@@ -17,7 +17,7 @@ import javax.transaction.Transactional;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserEntityRepository userRepository;
+    private final UserEntityRepository userEntityRepository;
     private final BCryptPasswordEncoder encoder;
 
     @Value("${jwt.secret-key}")
@@ -26,22 +26,27 @@ public class UserService {
     @Value("${jwt.token.expired-time-ms}")
     private Long expiredTimeMs;
 
+    public User loadUserByEmail(String email) {
+        return userEntityRepository.findByEmail(email).map(User::fromEntity).orElseThrow(
+                () -> new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", email)));
+    }
+
     // 회원가입
     @Transactional
     public User join(String email, String password) {
         // 중복된 이메일 체크
-        userRepository.findByEmail(email).ifPresent(it -> {
+        userEntityRepository.findByEmail(email).ifPresent(it -> {
             throw new SnsApplicationException(ErrorCode.DUPLICATED_USER_EMAIL, String.format("Email is %s", email));
         });
 
-        UserEntity savedUser = userRepository.save(UserEntity.of(email, encoder.encode(password)));
+        UserEntity savedUser = userEntityRepository.save(UserEntity.of(email, encoder.encode(password)));
         return User.fromEntity(savedUser);
     }
 
     // 로그인
     public String login(String email,String password) {
         // 회원가입 여부 체크
-        UserEntity userEntity = userRepository.findByEmail(email).orElseThrow(
+        UserEntity userEntity = userEntityRepository.findByEmail(email).orElseThrow(
                 () -> new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not found", email)));
 
         // 비밀번호 체크

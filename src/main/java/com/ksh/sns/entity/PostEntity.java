@@ -12,25 +12,25 @@ import java.time.Instant;
 @Setter
 @Getter
 @Entity
-@Table(name = "\"user\"")
-@SQLDelete(sql = "UPDATE \"user\" SET deleted_at = NOW() WHERE id=?")
+@Table(name = "\"post\"")
+@SQLDelete(sql = "UPDATE \"post\" SET deleted_at = NOW() WHERE id=?")
 @Where(clause = "deleted_at is NULL")
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class UserEntity{
+public class PostEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id = null;
 
-    @Column(name = "email", unique = true)
-    private String email;
+    @Column(name = "title")
+    private String title;
 
-    private String password;
+    @Column(name = "content", columnDefinition = "TEXT")
+    private String content;
 
-    @Enumerated(EnumType.STRING)
-    private UserRole role = UserRole.USER;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
 
     @Column(name = "registered_at")
     private Timestamp registeredAt;
@@ -52,10 +52,11 @@ public class UserEntity{
         this.updatedAt = Timestamp.from(Instant.now());
     }
 
-    public static UserEntity of(String email, String encodedPwd) {
-        UserEntity entity = new UserEntity();
-        entity.setEmail(email);
-        entity.setPassword(encodedPwd);
+    public static PostEntity of(String title, String content, UserEntity user) {
+        PostEntity entity = new PostEntity();
+        entity.setTitle(title);
+        entity.setContent(content);
+        entity.setUser(user);
         return entity;
     }
 }
