@@ -1,0 +1,20 @@
+spring.datasource:
+  hikari.maximum-pool-size: 4
+  url: jdbc:postgresql://localhost:5432/sns
+  username: ksh
+  password: 1234
+  platform: postgres
+  driver-class-name: org.postgresql.Driver
+
+spring.jpa:
+  database: postgresql
+  hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+  hibernate.ddl-auto: update
+  properties.hibernate.format_sql: true
+  show-sql: true
+
+jwt:
+  secret-key: com.ksh.sns-project.2023.secret_key
+  # 7 days
+  token.expired-time-ms: 604800000
+
