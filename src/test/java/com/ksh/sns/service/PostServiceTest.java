@@ -68,7 +68,7 @@ public class PostServiceTest {
         String email = "test@gmail.com";
         Integer postId = 1;
 
-        PostEntity postEntity = PostEntityFixture.get(email, postId);
+        PostEntity postEntity = PostEntityFixture.get(email, postId, 1);
         UserEntity userEntity = postEntity.getUser();
 
         when(userEntityRepository.findByEmail(email)).thenReturn(Optional.of(userEntity));
@@ -85,7 +85,7 @@ public class PostServiceTest {
         String email = "test@gmail.com";
         Integer postId = 1;
 
-        PostEntity postEntity = PostEntityFixture.get(email, postId);
+        PostEntity postEntity = PostEntityFixture.get(email, postId, 1);
         UserEntity userEntity = postEntity.getUser();
 
         when(userEntityRepository.findByEmail(email)).thenReturn(Optional.of(userEntity));
@@ -104,8 +104,8 @@ public class PostServiceTest {
         String email = "test@gmail.com";
         Integer postId = 1;
 
-        PostEntity postEntity = PostEntityFixture.get(email, postId);
-        UserEntity writer = UserEntityFixture.get("test@naver.com", "1234");
+        PostEntity postEntity = PostEntityFixture.get(email, postId, 1);
+        UserEntity writer = UserEntityFixture.get("test@naver.com", "1234", 2);
 
         when(userEntityRepository.findByEmail(email)).thenReturn(Optional.of(writer));
         when(postEntityRepository.findById(postId)).thenReturn(Optional.of(postEntity));

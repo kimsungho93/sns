@@ -5,9 +5,9 @@ import com.ksh.sns.entity.UserEntity;
 
 public class PostEntityFixture {
 
-    public static PostEntity get(String email, Integer postId) {
+    public static PostEntity get(String email, Integer postId, Integer userId) {
         UserEntity user = new UserEntity();
-        user.setId(1);
+        user.setId(userId);
         user.setEmail(email);
 
         PostEntity result = new PostEntity();

@@ -39,7 +39,7 @@ public class UserServiceTest {
 
         when(userEntityRepository.findByEmail(email)).thenReturn(Optional.empty());
         when(encoder.encode(password)).thenReturn("encrypt_password");
-        when(userEntityRepository.save(any())).thenReturn(UserEntityFixture.get(email, password));
+        when(userEntityRepository.save(any())).thenReturn(UserEntityFixture.get(email, password, 1));
 
         Assertions.assertDoesNotThrow(() -> userService.join(email, password));
     }
@@ -50,7 +50,7 @@ public class UserServiceTest {
         String email = "test@gmail.com";
         String password = "1234";
 
-        UserEntity fixture = UserEntityFixture.get(email, password);
+        UserEntity fixture = UserEntityFixture.get(email, password, 1);
 
         when(userEntityRepository.findByEmail(email)).thenReturn(Optional.of(fixture));
         when(encoder.encode(password)).thenReturn("encrypt_password");
@@ -66,7 +66,7 @@ public class UserServiceTest {
         String email = "test@gmail.com";
         String password = "1234";
 
-        UserEntity fixture = UserEntityFixture.get(email, password);
+        UserEntity fixture = UserEntityFixture.get(email, password, 1);
 
         when(userEntityRepository.findByEmail(email)).thenReturn(Optional.of(fixture));
         when(encoder.matches(password, fixture.getPassword())).thenReturn(true);
@@ -94,7 +94,7 @@ public class UserServiceTest {
         String password = "1234";
         String wrongPassword = "1111";
 
-        UserEntity fixture = UserEntityFixture.get(email, password);
+        UserEntity fixture = UserEntityFixture.get(email, password, 1);
 
         when(userEntityRepository.findByEmail(email)).thenReturn(Optional.of(fixture));
 
