@@ -76,7 +76,7 @@ public class PostControllerTest {
         String title = "제목1";
         String content = "내용1";
 
-        when(postService.modify(eq(title), eq(content), eq(any()), any())).
+        when(postService.modify(eq(title), eq(content), any(), any())).
                 thenReturn(Post.fromEntity(PostEntityFixture.get("test@gmail.com", 1, 1)));
 
         mockMvc.perform(put("/api/v1/posts/1")
