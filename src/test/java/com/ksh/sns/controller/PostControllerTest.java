@@ -6,6 +6,8 @@ import com.ksh.sns.controller.request.PostModifyRequest;
 import com.ksh.sns.controller.request.UserJoinRequest;
 import com.ksh.sns.exception.ErrorCode;
 import com.ksh.sns.exception.SnsApplicationException;
+import com.ksh.sns.fixture.PostEntityFixture;
+import com.ksh.sns.model.Post;
 import com.ksh.sns.service.PostService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -74,6 +76,9 @@ public class PostControllerTest {
     void postModify_success() throws Exception{
         String title = "제목1";
         String content = "내용1";
+
+        when(postService.modify(eq(title), eq(content), eq(any()), any())).
+                thenReturn(Post.fromEntity(PostEntityFixture.get("test@gmail.com", 1, 1)));
 
         mockMvc.perform(put("/api/v1/posts/1")
                         .contentType(MediaType.APPLICATION_JSON)
