@@ -56,6 +56,8 @@ public class PostService {
             throw new SnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("%s has no permission with %s", email, postId));
         }
 
+        likeEntityRepository.deleteAllByPost(postEntity);
+        commentEntityRepository.deleteAllByPost(postEntity);
         postEntityRepository.delete(postEntity);
     }
 
