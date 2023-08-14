@@ -8,6 +8,8 @@ import com.ksh.sns.repository.UserEntityRepository;
 import com.ksh.sns.util.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -58,5 +60,10 @@ public class UserService {
         String token = JwtTokenUtils.generateToken(email, secretKey, expiredTimeMs);
 
         return token;
+    }
+
+    // TODO: alarm return
+    public Page<Void> alarmList(String email, Pageable pageable) {
+        return Page.empty();
     }
 }
