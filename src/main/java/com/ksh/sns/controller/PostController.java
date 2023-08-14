@@ -1,9 +1,12 @@
 package com.ksh.sns.controller;
 
+import com.ksh.sns.controller.request.PostCommentRequest;
 import com.ksh.sns.controller.request.PostCreateRequest;
 import com.ksh.sns.controller.request.PostModifyRequest;
+import com.ksh.sns.controller.response.CommentResponse;
 import com.ksh.sns.controller.response.PostResponse;
 import com.ksh.sns.controller.response.Response;
+import com.ksh.sns.entity.PostEntity;
 import com.ksh.sns.model.Post;
 import com.ksh.sns.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +44,7 @@ public class PostController {
     }
 
     @GetMapping
-    public Response<Page<PostResponse>> list(Pageable pageable, Authentication authentication) {
+    public Response<Page<PostResponse>> list(Pageable pageable) {
         return Response.success(postService.list(pageable).map(PostResponse::fromPost));
     }
 
@@ -57,7 +60,20 @@ public class PostController {
     }
 
     @GetMapping("/{postId}/likes")
-    public Response<Integer> likeCount(@PathVariable Integer postId, Authentication authentication) {
+    public Response<Integer> likeCount(@PathVariable Integer postId) {
         return Response.success(postService.likeCount(postId));
     }
+
+    @PostMapping("/{postId}/comments")
+    public Response<Void> comment(@PathVariable Integer postId, @RequestBody PostCommentRequest request, Authentication authentication) {
+        postService.comment(postId, authentication.getName(), request.getComment());
+        return Response.success();
+    }
+
+    @GetMapping("/{postId}/comments")
+    public Response<Page<CommentResponse>> comment(@PathVariable Integer postId, Pageable pageable) {
+        return Response.success(postService.getComments(postId, pageable).map(CommentResponse::fromComment));
+    }
+
+
 }

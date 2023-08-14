@@ -1,11 +1,14 @@
 package com.ksh.sns.service;
 
+import com.ksh.sns.entity.CommentEntity;
 import com.ksh.sns.entity.LikeEntity;
 import com.ksh.sns.entity.PostEntity;
 import com.ksh.sns.entity.UserEntity;
 import com.ksh.sns.exception.ErrorCode;
 import com.ksh.sns.exception.SnsApplicationException;
+import com.ksh.sns.model.Comment;
 import com.ksh.sns.model.Post;
+import com.ksh.sns.repository.CommentEntityRepository;
 import com.ksh.sns.repository.LikeEntityRepository;
 import com.ksh.sns.repository.PostEntityRepository;
 import com.ksh.sns.repository.UserEntityRepository;
@@ -15,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,21 +26,18 @@ public class PostService {
     private final PostEntityRepository postEntityRepository;
     private final UserEntityRepository userEntityRepository;
     private final LikeEntityRepository likeEntityRepository;
+    private final CommentEntityRepository commentEntityRepository;
 
     @Transactional
     public void create(String title, String content, String email) {
-        UserEntity userEntity = userEntityRepository.findByEmail(email).orElseThrow(() ->
-                new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", email)));
+        UserEntity userEntity = getUserOrException(email);
         postEntityRepository.save(PostEntity.of(title, content, userEntity));
     }
 
     @Transactional
     public Post modify(String title, String content, String email, Integer postId) {
-        UserEntity userEntity = userEntityRepository.findByEmail(email).orElseThrow(() ->
-                new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", email)));
-
-        PostEntity postEntity = postEntityRepository.findById(postId).orElseThrow(() ->
-                new SnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("%s not founded", postId)));
+        UserEntity userEntity = getUserOrException(email);
+        PostEntity postEntity = getPostOrException(postId);
 
         if (postEntity.getUser() != userEntity) {
             throw new SnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("%s has no permission with %s", email, postId));
@@ -52,11 +51,8 @@ public class PostService {
 
     @Transactional
     public void delete(String email, Integer postId) {
-        UserEntity userEntity = userEntityRepository.findByEmail(email).orElseThrow(() ->
-                new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", email)));
-
-        PostEntity postEntity = postEntityRepository.findById(postId).orElseThrow(() ->
-                new SnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("%s not founded", postId)));
+        UserEntity userEntity = getUserOrException(email);
+        PostEntity postEntity = getPostOrException(postId);
 
         if (postEntity.getUser() != userEntity) {
             throw new SnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("%s has no permission with %s", email, postId));
@@ -70,19 +66,15 @@ public class PostService {
     }
 
     public Page<Post> my(String email, Pageable pageable) {
-        UserEntity userEntity = userEntityRepository.findByEmail(email).orElseThrow(() ->
-                new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", email)));
+        UserEntity userEntity = getUserOrException(email);
 
         return postEntityRepository.findAllByUser(userEntity, pageable).map(Post::fromEntity);
     }
 
     @Transactional
     public void like(Integer postId, String email) {
-        PostEntity postEntity = postEntityRepository.findById(postId).orElseThrow(() ->
-                new SnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("%s not founded", postId)));
-
-        UserEntity userEntity = userEntityRepository.findByEmail(email).orElseThrow(() ->
-                new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", email)));
+        PostEntity postEntity = getPostOrException(postId);
+        UserEntity userEntity = getUserOrException(email);
 
         likeEntityRepository.findByUserAndPost(userEntity, postEntity).ifPresent(it -> {
             throw new SnsApplicationException(ErrorCode.ALREADY_LIKED, String.format("email : %s already like post %d", email, postId));
@@ -91,11 +83,34 @@ public class PostService {
         likeEntityRepository.save(LikeEntity.of(userEntity, postEntity));
     }
 
-    @Transactional
     public int likeCount(Integer postId) {
-        PostEntity postEntity = postEntityRepository.findById(postId).orElseThrow(() ->
-                new SnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("%s not founded", postId)));
+        PostEntity postEntity = getPostOrException(postId);
 
         return likeEntityRepository.countByPost(postEntity);
+    }
+
+    @Transactional
+    public void comment(Integer postId, String email, String comment) {
+        PostEntity postEntity = getPostOrException(postId);
+        UserEntity userEntity = getUserOrException(email);
+
+        commentEntityRepository.save(CommentEntity.of(userEntity, postEntity, comment));
+    }
+
+    public Page<Comment> getComments(Integer postId, Pageable pageable) {
+        PostEntity postEntity = getPostOrException(postId);
+        return commentEntityRepository.findAllByPost(postEntity, pageable).map(Comment::fromEntity);
+    }
+
+    // post exist
+    private PostEntity getPostOrException(Integer postId) {
+        return postEntityRepository.findById(postId).orElseThrow(() ->
+                new SnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("%s not founded", postId)));
+    }
+
+    // user exist
+    private UserEntity getUserOrException(String email) {
+        return userEntityRepository.findByEmail(email).orElseThrow(() ->
+                new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", email)));
     }
 }

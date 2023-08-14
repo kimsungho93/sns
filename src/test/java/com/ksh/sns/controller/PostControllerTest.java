@@ -1,6 +1,7 @@
 package com.ksh.sns.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ksh.sns.controller.request.PostCommentRequest;
 import com.ksh.sns.controller.request.PostCreateRequest;
 import com.ksh.sns.controller.request.PostModifyRequest;
 import com.ksh.sns.exception.ErrorCode;
@@ -261,5 +262,42 @@ public class PostControllerTest {
                 ).andDo(print())
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    @DisplayName("댓글 기능 성공")
+    @WithMockUser
+    void comment_success() throws Exception {
+        mockMvc.perform(post("/api/v1/posts/1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(new PostCommentRequest("코멘트1")))
+                ).andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("댓글 작성시 로그인하지 않은 경우")
+    @WithAnonymousUser
+    void comment_fail_not_login() throws Exception {
+        mockMvc.perform(post("/api/v1/posts/1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(new PostCommentRequest("코멘트1")))
+                ).andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("댓글 작성시 포스트가 없는 경우")
+    @WithMockUser
+    void comment_fail_none_exist_post() throws Exception {
+        doThrow(new SnsApplicationException(ErrorCode.POST_NOT_FOUND)).when(postService).comment(any(), any(), any());
+
+        mockMvc.perform(post("/api/v1/posts/1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(new PostCommentRequest("코멘트1")))
+                ).andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+
 
 }
