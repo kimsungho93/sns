@@ -3,7 +3,6 @@ package com.ksh.sns.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ksh.sns.controller.request.PostCreateRequest;
 import com.ksh.sns.controller.request.PostModifyRequest;
-import com.ksh.sns.controller.request.UserJoinRequest;
 import com.ksh.sns.exception.ErrorCode;
 import com.ksh.sns.exception.SnsApplicationException;
 import com.ksh.sns.fixture.PostEntityFixture;
@@ -20,7 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;

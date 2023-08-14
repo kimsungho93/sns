@@ -1,6 +1,9 @@
 package com.ksh.sns.entity;
 
-import lombok.*;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
@@ -11,25 +14,22 @@ import java.time.Instant;
 @Setter
 @Getter
 @Entity
-@Table(name = "\"post\"")
-@SQLDelete(sql = "UPDATE \"post\" SET deleted_at = NOW() WHERE id=?")
+@Table(name = "\"like\"")
+@SQLDelete(sql = "UPDATE \"like\" SET deleted_at = NOW() WHERE id=?")
 @Where(clause = "deleted_at is NULL")
 @NoArgsConstructor
-public class PostEntity {
-
+public class LikeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id = null;
-
-    @Column(name = "title")
-    private String title;
-
-    @Column(name = "content", columnDefinition = "TEXT")
-    private String content;
+    private Integer id;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
+
+    @ManyToOne
+    @JoinColumn(name = "post_id")
+    private PostEntity post;
 
     @Column(name = "registered_at")
     private Timestamp registeredAt;
@@ -39,7 +39,6 @@ public class PostEntity {
 
     @Column(name = "deleted_at")
     private Timestamp deletedAt;
-
 
     @PrePersist
     void registeredAt() {
@@ -51,11 +50,10 @@ public class PostEntity {
         this.updatedAt = Timestamp.from(Instant.now());
     }
 
-    public static PostEntity of(String title, String content, UserEntity user) {
-        PostEntity entity = new PostEntity();
-        entity.setTitle(title);
-        entity.setContent(content);
-        entity.setUser(user);
+    public static LikeEntity of(UserEntity userEntity, PostEntity postEntity) {
+        LikeEntity entity = new LikeEntity();
+        entity.setUser(userEntity);
+        entity.setPost(postEntity);
         return entity;
     }
 }
