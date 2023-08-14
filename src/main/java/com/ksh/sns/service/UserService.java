@@ -6,6 +6,7 @@ import com.ksh.sns.exception.SnsApplicationException;
 import com.ksh.sns.model.Alarm;
 import com.ksh.sns.model.User;
 import com.ksh.sns.repository.AlarmEntityRepository;
+import com.ksh.sns.repository.UserCacheRepository;
 import com.ksh.sns.repository.UserEntityRepository;
 import com.ksh.sns.util.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class UserService {
 
     private final UserEntityRepository userEntityRepository;
     private final AlarmEntityRepository alarmEntityRepository;
+    private final UserCacheRepository userCacheRepository;
     private final BCryptPasswordEncoder encoder;
 
     @Value("${jwt.secret-key}")
@@ -32,8 +34,9 @@ public class UserService {
     private Long expiredTimeMs;
 
     public User loadUserByEmail(String email) {
-        return userEntityRepository.findByEmail(email).map(User::fromEntity).orElseThrow(
-                () -> new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", email)));
+        return userCacheRepository.getUser(email).orElseGet(() ->
+                userEntityRepository.findByEmail(email).map(User::fromEntity).orElseThrow(
+                () -> new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", email))));
     }
 
     // 회원가입
@@ -51,11 +54,11 @@ public class UserService {
     // 로그인
     public String login(String email,String password) {
         // 회원가입 여부 체크
-        UserEntity userEntity = userEntityRepository.findByEmail(email).orElseThrow(
-                () -> new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not found", email)));
+        User user = loadUserByEmail(email);
+        userCacheRepository.setUser(user);
 
         // 비밀번호 체크
-        if (!encoder.matches(password, userEntity.getPassword())) {
+        if (!encoder.matches(password, user.getPassword())) {
             throw new SnsApplicationException(ErrorCode.INVALID_PASSWORD);
         }
 
