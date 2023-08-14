@@ -83,7 +83,7 @@ public class PostService {
         alarmEntityRepository.save(AlarmEntity.of(postEntity.getUser(),  AlarmType.NEW_LIKE, new AlarmArgs(userEntity.getId(), postEntity.getId())));
     }
 
-    public int likeCount(Integer postId) {
+    public long likeCount(Integer postId) {
         PostEntity postEntity = getPostOrException(postId);
 
         return likeEntityRepository.countByPost(postEntity);
