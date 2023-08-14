@@ -1,6 +1,5 @@
 package com.ksh.sns.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ksh.sns.controller.request.UserJoinRequest;
 import com.ksh.sns.controller.request.UserLoginRequest;
