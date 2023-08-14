@@ -3,7 +3,9 @@ package com.ksh.sns.service;
 import com.ksh.sns.entity.UserEntity;
 import com.ksh.sns.exception.ErrorCode;
 import com.ksh.sns.exception.SnsApplicationException;
+import com.ksh.sns.model.Alarm;
 import com.ksh.sns.model.User;
+import com.ksh.sns.repository.AlarmEntityRepository;
 import com.ksh.sns.repository.UserEntityRepository;
 import com.ksh.sns.util.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import javax.transaction.Transactional;
 public class UserService {
 
     private final UserEntityRepository userEntityRepository;
+    private final AlarmEntityRepository alarmEntityRepository;
     private final BCryptPasswordEncoder encoder;
 
     @Value("${jwt.secret-key}")
@@ -63,7 +66,9 @@ public class UserService {
     }
 
     // TODO: alarm return
-    public Page<Void> alarmList(String email, Pageable pageable) {
-        return Page.empty();
+    public Page<Alarm> alarmList(String email, Pageable pageable) {
+        UserEntity userEntity = userEntityRepository.findByEmail(email).orElseThrow(() ->
+                new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", email)));
+        return alarmEntityRepository.findAllByUser(userEntity, pageable).map(Alarm::fromEntity);
     }
 }

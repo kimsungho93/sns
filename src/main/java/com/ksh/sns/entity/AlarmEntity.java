@@ -1,10 +1,17 @@
 package com.ksh.sns.entity;
 
-import lombok.AllArgsConstructor;
+
+import com.ksh.sns.model.AlarmArgs;
+import com.ksh.sns.model.AlarmType;
+
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
+
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
@@ -14,28 +21,29 @@ import java.time.Instant;
 @Setter
 @Getter
 @Entity
-@Table(name = "\"comment\"", indexes = {
-        @Index(name = "post_id_idx", columnList = "post_id")
+@Table(name = "\"alarm\"", indexes = {
+        @Index(name = "user_id_idx", columnList = "user_id")
 })
-@SQLDelete(sql = "UPDATE \"comment\" SET deleted_at = NOW() WHERE id=?")
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
+@SQLDelete(sql = "UPDATE \"alarm\" SET deleted_at = NOW() WHERE id=?")
 @Where(clause = "deleted_at is NULL")
 @NoArgsConstructor
-@AllArgsConstructor
-public class CommentEntity {
+public class AlarmEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    // 알람을 받은 사람
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    @ManyToOne
-    @JoinColumn(name = "post_id")
-    private PostEntity post;
+    @Enumerated(EnumType.STRING)
+    private AlarmType alarmType;
 
-    @Column(name = "comment")
-    private String comment;
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "json")
+    private AlarmArgs args;
 
     @Column(name = "registered_at")
     private Timestamp registeredAt;
@@ -56,11 +64,11 @@ public class CommentEntity {
         this.updatedAt = Timestamp.from(Instant.now());
     }
 
-    public static CommentEntity of(UserEntity userEntity, PostEntity postEntity, String comment) {
-        CommentEntity entity = new CommentEntity();
+    public static AlarmEntity of(UserEntity userEntity, AlarmType alarmType, AlarmArgs args) {
+        AlarmEntity entity = new AlarmEntity();
         entity.setUser(userEntity);
-        entity.setPost(postEntity);
-        entity.setComment(comment);
+        entity.setAlarmType(alarmType);
+        entity.setArgs(args);
         return entity;
     }
 }
