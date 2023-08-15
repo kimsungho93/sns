@@ -14,7 +14,8 @@ public enum ErrorCode {
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 유효하지 않습니다."),
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "포스트가 존재하지 않습니다."),
     INVALID_PERMISSION(HttpStatus.UNAUTHORIZED, "승인되지 않은 접근입니다."),
-    ALREADY_LIKED(HttpStatus.CONFLICT, "이미 해당 포스트에 좋아요를 눌렀습니다.");
+    ALREADY_LIKED(HttpStatus.CONFLICT, "이미 해당 포스트에 좋아요를 눌렀습니다."),
+    ALARM_CONNECT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알람 연결에 실패하였습니다.");
 
     private final HttpStatus status;
     private final String message;
