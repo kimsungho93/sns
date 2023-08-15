@@ -17,6 +17,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,34 +26,44 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final String key;
     private final UserService userService;
 
+    private final static List<String> TOKEN_PARAM_URLS = List.of("/api/v1/users/alarm/subscribe");
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
+
         final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (header == null || !header.startsWith("Bearer ")) {
-            log.error("Error occurs while getting header. header is null or invalid {}", request.getRequestURL());
-            filterChain.doFilter(request, response);
-            return;
-        }
-
+        final String token;
         try {
-            final String token = header.split(" ")[1].trim();
+            if (TOKEN_PARAM_URLS.contains(request.getRequestURI())) {
+                log.info("Request with {} check the query param", request.getRequestURI());
+                token = request.getQueryString().split("=")[1].trim();
+            } else if (header == null || !header.startsWith("Bearer ")) {
+                log.error("Authorization Header does not start with Bearer {}", request.getRequestURI());
+                filterChain.doFilter(request, response);
+                return;
+            } else {
+                token = header.split(" ")[1].trim();
+            }
 
-            if (JwtTokenUtils.isExpired(token, key)) {
+            String email = JwtTokenUtils.getEmail(token, key);
+            User userDetails = userService.loadUserByEmail(email);
+
+            if (!JwtTokenUtils.isExpired(token, key)) {
                 log.error("Key is expired");
                 filterChain.doFilter(request, response);
                 return;
             }
-
-            String email = JwtTokenUtils.getEmail(token, key);
-            User user = userService.loadUserByEmail(email);
-
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    user, null, user.getAuthorities());
-
+                    userDetails, null,
+                    userDetails.getAuthorities()
+            );
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
+
         } catch (RuntimeException e) {
-            log.error("Error occurs while validating. {}", e.toString());
             filterChain.doFilter(request, response);
             return;
         }
