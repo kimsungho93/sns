@@ -22,3 +22,26 @@ spring:
   redis:
     host: localhost
     port: 6379
+
+kafka:
+  properties:
+    security.protocol: SASL_SSL
+    sasl.mechanism: SCRAM-SHA-256
+    sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="xxxxxx" password="xxxxxxx;
+    consumer:
+      properties.spring.json.trusted.packages: "*"
+      bootstrap-servers: localhost:9092
+      group-id: alarm
+      auto-offset-reset: lastest
+      key-deserializer: org.apache.kafka.common.serialization.IntegerDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    listener:
+      ack-mode: MANUAL
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties.enable.idempotence: false
+    topic:
+      alarm: prefix-alarm
+

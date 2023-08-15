@@ -7,6 +7,8 @@ import com.ksh.sns.model.AlarmArgs;
 import com.ksh.sns.model.AlarmType;
 import com.ksh.sns.model.Comment;
 import com.ksh.sns.model.Post;
+import com.ksh.sns.model.event.AlarmEvent;
+import com.ksh.sns.producer.AlarmProducer;
 import com.ksh.sns.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,6 +28,7 @@ public class PostService {
     private final CommentEntityRepository commentEntityRepository;
     private final AlarmEntityRepository alarmEntityRepository;
     private final AlarmService alarmService;
+    private final AlarmProducer alarmProducer;
 
     @Transactional
     public void create(String title, String content, String email) {
@@ -82,11 +85,10 @@ public class PostService {
         });
 
         likeEntityRepository.save(LikeEntity.of(userEntity, postEntity));
-
-        AlarmEntity alarmEntity = alarmEntityRepository.save(AlarmEntity.of(
-                postEntity.getUser(), AlarmType.NEW_LIKE, new AlarmArgs(userEntity.getId(), postEntity.getId())));
-
-        alarmService.send(alarmEntity.getId(), postEntity.getUser().getId());
+        alarmProducer.send(new AlarmEvent(
+                postEntity.getUser().getId(),
+                AlarmType.NEW_LIKE,
+                new AlarmArgs(userEntity.getId(), postEntity.getId())));
     }
 
     public long likeCount(Integer postId) {
@@ -101,11 +103,10 @@ public class PostService {
         UserEntity userEntity = getUserOrException(email);
 
         commentEntityRepository.save(CommentEntity.of(userEntity, postEntity, comment));
-
-        AlarmEntity alarmEntity = alarmEntityRepository.save(AlarmEntity.of(postEntity.getUser(), AlarmType.NEW_COMMENT,
+        alarmProducer.send(new AlarmEvent(
+                postEntity.getUser().getId(),
+                AlarmType.NEW_COMMENT,
                 new AlarmArgs(userEntity.getId(), postEntity.getId())));
-
-        alarmService.send(alarmEntity.getId(), postEntity.getUser().getId());
     }
 
     public Page<Comment> getComments(Integer postId, Pageable pageable) {
