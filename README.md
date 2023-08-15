@@ -11,6 +11,9 @@
 <img src="https://img.shields.io/badge/junit5-25A162?style=for-the-badge&logo=redis&logoColor=white">
 <img src="https://img.shields.io/badge/hibernate-59666C?style=for-the-badge&logo=hibernate&logoColor=white">
 
+<img src="https://github.com/kimsungho93/sns/assets/87847853/92a48d6a-5fda-4426-b534-e0624ce886ee" width="600" height="600"/>
+
+
 # 🔨 프로젝트 기능 및 설계
 ## 🤷‍♂️ 회원
 * **회원가입**
@@ -47,12 +50,16 @@
   * 알림은 로그인이 되어야지만 확인이 가능하다.
 
 # 🗺 ERD
+![image](https://github.com/kimsungho93/sns/assets/87847853/e986ffa0-7a2e-4d6d-bb27-dfc553b7a10b)
+
   
 # 🤔 Trouble Shooting
 
 # ❗느낀점
-1. 
-2. 
+1. 매번 API 요청시 회원정보를 가져오는 부분을 캐싱 처리하여 DB I/O를 절반 이하로 줄일 수 있었다.
+2. 알람 + 유저 정보를 조인해서 가져올 때 N + 1 문제가 발생하였다. -> 지연로딩으로 해결하려고 하였으나 근본적인 해결은 아닌듯하여 조금 더 고민이 필요
+3. 알림 기능을 폴링 방식이 아닌 SSE(Server-Sent Event) 방식으로 개선하여 서버를 부하를 줄일 수 있었다.
+4. 카프카를 알람 기능에 도입하여 비동기적으로 처리할 수 있었다.
   
 
 
