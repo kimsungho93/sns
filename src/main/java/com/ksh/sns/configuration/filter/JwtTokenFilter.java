@@ -40,7 +40,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             if (TOKEN_PARAM_URLS.contains(request.getRequestURI())) {
                 log.info("Request with {} check the query param", request.getRequestURI());
                 token = request.getQueryString().split("=")[1].trim();
-            } else if (header == null || !header.startsWith("Bearer ")) {
+            } else if (header == null || !header.startsWith("Bearer")) {
                 log.error("Authorization Header does not start with Bearer {}", request.getRequestURI());
                 filterChain.doFilter(request, response);
                 return;
@@ -51,7 +51,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             String email = JwtTokenUtils.getEmail(token, key);
             User userDetails = userService.loadUserByEmail(email);
 
-            if (!JwtTokenUtils.isExpired(token, key)) {
+            if (JwtTokenUtils.isExpired(token, key)) {
                 log.error("Key is expired");
                 filterChain.doFilter(request, response);
                 return;
